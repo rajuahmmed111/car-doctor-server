@@ -9,7 +9,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wqymbxc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wqymbxc.mongodb.net/carDoctor?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -26,9 +26,18 @@ async function run() {
 
     const servicesCollection = client.db("carDoctor").collection("services");
 
-    app.get("/services",  async (req, res) => {
-        const result = await servicesCollection.find().toArray();
-        res.json(result);
+    app.get("/services", async (req, res) => {
+      const result = await servicesCollection.find().toArray();
+      res.json(result);
+    });
+
+    app.get("/services/:id", async (req, res) => {
+      const { id } = req.params;
+      const result = await servicesCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      if (result) res.json(result);
+      else res.status(404).send("Service not found.");
     });
 
     await client.db("admin").command({ ping: 1 });
