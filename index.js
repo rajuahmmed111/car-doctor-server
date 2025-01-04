@@ -25,6 +25,7 @@ async function run() {
     await client.connect();
 
     const servicesCollection = client.db("carDoctor").collection("services");
+    const bookingCollection = client.db("carDoctor").collection("bookings");
 
     app.get("/services", async (req, res) => {
       const result = await servicesCollection.find().toArray();
@@ -43,6 +44,13 @@ async function run() {
       const result = await servicesCollection.findOne(query, options);
       if (result) res.json(result);
       else res.status(404).send("Service not found.");
+
+      // booking
+      app.post("/bookings", async (req, res) => {
+        const booking = req.body;
+        const result = await bookingCollection.insertOne(booking);
+        res.send(result);
+      });
     });
 
     await client.db("admin").command({ ping: 1 });
