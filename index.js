@@ -71,8 +71,18 @@ async function run() {
     });
 
     app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
       const updatedBookings = req.body;
       console.log(updatedBookings);
+
+      const updatedDoc = {
+        $set: {
+          status: updatedBookings.status,
+        },
+      };
+      const result = await bookingCollection.updateOne(filter, updatedDoc);
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
