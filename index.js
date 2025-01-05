@@ -70,8 +70,9 @@ async function run() {
       res.send(result);
     });
 
-    app.put("/bookings/:id", async (req, res) => {
+    app.patch("/bookings/:id", async (req, res) => {
       const updatedBookings = req.body;
+      console.log(updatedBookings);
     });
 
     await client.db("admin").command({ ping: 1 });
