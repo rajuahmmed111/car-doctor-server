@@ -27,6 +27,7 @@ async function run() {
     const servicesCollection = client.db("carDoctor").collection("services");
     const bookingCollection = client.db("carDoctor").collection("bookings");
 
+    // services
     app.get("/services", async (req, res) => {
       const result = await servicesCollection.find().toArray();
       res.json(result);
@@ -44,28 +45,28 @@ async function run() {
       const result = await servicesCollection.findOne(query, options);
       if (result) res.json(result);
       else res.status(404).send("Service not found.");
-
-      // booking
-      app.get("/bookings", async (req, res) => {
-        let query = {};
-        if (req.query?.email) {
-          query = { email: req.query?.email };
-        }
-        const result = await bookingCollection.find().toArray();
-        res.send(result);
-      });
-
-      app.post("/bookings", async (req, res) => {
-        const booking = req.body;
-        const result = await bookingCollection.insertOne(booking);
-        res.send(result);
-      });
     });
 
+    // booking
     app.delete("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.get("/bookings", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query?.email };
+      }
+      const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await bookingCollection.insertOne(booking);
       res.send(result);
     });
 
