@@ -62,7 +62,7 @@ async function run() {
       });
     });
 
-    app.delete("/bookings/:id", async (req, res) => {
+    app.delete("/booking/:id", async (req, res) => {
       const id = req.params.id;
       const result = await bookingCollection.deleteOne({
         _id: new ObjectId(id),
