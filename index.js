@@ -1,6 +1,6 @@
 const express = require("express");
-const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
@@ -32,7 +32,8 @@ async function run() {
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       console.log(user);
-      res.sendStatus(user);
+      const token = jwt.sign(user, "secret", { expiresIn: "1h" });
+      res.sendStatus(token);
     });
 
     // services
