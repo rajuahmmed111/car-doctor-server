@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
@@ -26,6 +27,13 @@ async function run() {
 
     const servicesCollection = client.db("carDoctor").collection("services");
     const bookingCollection = client.db("carDoctor").collection("bookings");
+
+    // auth
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log(user);
+      res.sendStatus(user);
+    });
 
     // services
     app.get("/services", async (req, res) => {
@@ -55,6 +63,7 @@ async function run() {
       res.send(result);
     });
 
+    // get all booking for bookingCollection
     app.get("/bookings", async (req, res) => {
       let query = {};
       if (req.query?.email) {
