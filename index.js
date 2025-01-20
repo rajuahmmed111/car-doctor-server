@@ -28,7 +28,7 @@ async function run() {
     const servicesCollection = client.db("carDoctor").collection("services");
     const bookingCollection = client.db("carDoctor").collection("bookings");
 
-    // auth using jwt
+    // auth
     app.post("/jwt", async (req, res) => {
       const user = req.body;
       console.log(user);
