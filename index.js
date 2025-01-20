@@ -64,7 +64,6 @@ async function run() {
       res.send(result);
     });
 
-    // get all booking for bookingCollection
     app.get("/bookings", async (req, res) => {
       let query = {};
       if (req.query?.email) {
