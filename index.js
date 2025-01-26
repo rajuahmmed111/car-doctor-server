@@ -1,14 +1,49 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
+
+// custom middleware
+const logged = async (req, res, next) => {
+  console.log("called :", req.host, req.originalUrl);
+  next();
+};
+
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies.token;
+  console.log("custom verifyToken middleware :", token);
+  if (!token) {
+    return res.status(401).send({ message: "not authorized" });
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    // if err
+    if (err) {
+      console.log(err);
+      return res.status(403).send({ message: "invalid token" });
+    }
+
+    // if valid
+    console.log("decoded token", decoded);
+    req.user = decoded;
+    next();
+  });
+
+};
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wqymbxc.mongodb.net/carDoctor?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -30,15 +65,16 @@ async function run() {
     // auth
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log(user);
+      // console.log(user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
       res
-        .cookie("accessToken", token, {
+        .cookie("token", token, {
           httpOnly: true,
           secure: false,
-          sameSite: "none",
+          // sameSite: "none",
+          // maxAge: 3600 * 24 * 60,
         })
         .send({ success: true });
     });
@@ -64,19 +100,20 @@ async function run() {
     });
 
     // booking
-    app.delete("/bookings/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await bookingCollection.deleteOne(query);
-      res.send(result);
-    });
-
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", logged, verifyToken, async (req, res) => {
+      console.log("valid user", req.user);
       let query = {};
       if (req.query?.email) {
         query = { email: req.query?.email };
       }
       const result = await bookingCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });
 
